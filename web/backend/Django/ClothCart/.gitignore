@@ -1,0 +1,35 @@
+# Django
+*.pyc
+__pycache__/
+*.sqlite3
+db.sqlite3
+
+# Virtual environment
+venv/
+env/
+.venv/
+
+# Environment variables
+.env
+.env.local
+
+# IDE
+.vscode/
+.idea/
+
+# Python packaging
+*.egg-info/
+*.egg
+*.dist-info/
+dist/
+build/
+
+# Static files
+/staticfiles/
+/static/
+/media/
+
+
+debug.log
+django.log
+security.log
