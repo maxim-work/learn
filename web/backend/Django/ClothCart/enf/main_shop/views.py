@@ -17,7 +17,7 @@ class IndexView(TemplateView):
     
     def get(self, request, *args, **kwargs):
         context = self.get_context_data(**kwargs)
-        if request.headers.get('Hx-Request'):
+        if request.headers.get('HX-Request'):
             return TemplateResponse(request, 'main_shop/home_content.html', context)
         return TemplateResponse(request, self.template_name, context)
     
@@ -25,11 +25,11 @@ class IndexView(TemplateView):
 class CatalogView(TemplateView):
     template = 'main_shop/base.html'
 
-    FILTER_MAPING = {
+    FILTER_MAPPING = {
         'color': lambda queryset, value : queryset.filter(color__iexact=value),
         'min_price': lambda queryset, value : queryset.filter(price_gte=value),
         'max_price': lambda queryset, value : queryset.filter(price_lte=value),
-        'size': lambda queryset, value : queryset.filter(product_size__size__name=value),
+        'size': lambda queryset, value : queryset.filter(product_sizes__size__name=value),
     }
 
 
@@ -37,7 +37,7 @@ class CatalogView(TemplateView):
         context = super().get_context_data(**kwargs)
         category_slug = kwargs.get('category_slug')
         categories = Category.objects.all()
-        products = Product.object.all().order_by('--created_at')
+        products = Product.objects.all().order_by('-created_at')
         current_category = None
 
         if category_slug:
@@ -47,12 +47,12 @@ class CatalogView(TemplateView):
         query = self.request.GET.get('q')
         if query:
             products = products.filter(
-                Q(name__icontains=query) | Q(desription__icontains=query) 
+                Q(name__icontains=query) | Q(description__icontains=query) 
                   )
         
         filter_params = {}
 
-        for param, filter_func in self.FILTER_MAPING.items():
+        for param, filter_func in self.FILTER_MAPPING.items():
             value = self.request.GET.get(param)
             if value:
                 products = filter_func(products, value)
@@ -63,7 +63,7 @@ class CatalogView(TemplateView):
         filter_params['q'] = query or ''
 
         context.update({
-            'category': categories,
+            'categories': categories,
             'products': products,
             'current_category': category_slug,
             'filter_params': filter_params,
@@ -72,9 +72,9 @@ class CatalogView(TemplateView):
         })
 
 
-        if self.request.GET.get['show_search'] == 'true':
+        if self.request.GET.get('show_search')  == 'true':
             context['show_search'] = True
-        elif self.request.GET.get['reset_search'] == 'true':
+        elif self.request.GET.get('reset_search') == 'true':
             context['reset_search'] = True
 
         return context
@@ -83,12 +83,12 @@ class CatalogView(TemplateView):
     def get(self, request, *args, **kwargs):
         context = self.get_context_data(**kwargs)
         if request.headers.get('HX-Request'):
-            if context.get('show_searh'):
+            if context.get('show_search'):
                 return TemplateResponse(request, 'main_shop/search_input.html', context)
-            elif context.get('reset_searh'):
-                return TemplateResponse(request, 'main_shop/search_button.html', [])
+            elif context.get('reset_search'):
+                return TemplateResponse(request, 'main_shop/search_button.html', {})
             
-            template = 'main_shop/filter_modal.html' if request.get('show_filters') == True else 'main_shop/catalog.html'
+            template = 'main_shop/filter_modal.html' if request.GET.get('show_filters') == True else 'main_shop/catalog.html'
             return TemplateResponse(request, template, context)
         return TemplateResponse(request, self.template_name, context)
 
@@ -111,8 +111,8 @@ class ProductDetailView(DetailView):
         return context
     
     def get(self, request, *args, **kwargs):
-        self.obgect = self.get_object()
+        self.object = self.get_object()
         context = self.get_context_data(**kwargs)
-        if request.header.get('HX-Request'):
+        if request.headers.get('HX-Request'):
             return TemplateResponse(request, 'main_shop/product_detail.html', context)
         raise TemplateResponse(request, self.template_name, context)
