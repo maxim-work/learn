@@ -26,7 +26,7 @@ class Cart(models.Model):
         cart_item, created = CartItem.objects.get_or_create(cart=self,
                                                             product=product,
                                                             product_size=product_size,
-                                                            default={'quantity': quantity})
+                                                            defaults={'quantity': quantity})
         
         if not created:
             cart_item.quantity += quantity
@@ -77,4 +77,4 @@ class CartItem(models.Model):
 
     @property
     def total_price(self):
-        return Decimal(str(self.product.price) * self.quantity)
+        return Decimal(str(self.product.price)) * self.quantity

@@ -11,7 +11,7 @@ import json
 
 
 class CartMixin:
-    def get_cart(request):
+    def get_cart(self, request):
         if hasattr(request, 'cart'):
             return request.cart
         
@@ -70,12 +70,12 @@ class AddToCartView(CartMixin, View):
                 }, status=400)
             
         quantity = form.cleaned_data['quantity']
-        if Product.stock < quantity:
+        if product_size.stock < quantity:
             return JsonResponse({
                 'error': f'Only {product_size.stock} items available'
             }, status=400)
         
-        existing_item = cart.item.filer(
+        existing_item = cart.items.filter(
             product=product,
             product_size=product_size,
         ).first()
