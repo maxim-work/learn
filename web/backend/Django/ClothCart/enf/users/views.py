@@ -11,7 +11,6 @@ from django.contrib import messages
 from main_shop.models import Product
 
 
-
 def register(request):
     if request.method == 'POST':
         form = CustomUserCreationForm(request.POST)
@@ -21,20 +20,20 @@ def register(request):
             return redirect('main_shop:index')
     else:
         form = CustomUserCreationForm()
-    return render(request, 'user/register.html', {'form': form})
+    return render(request, 'users/register.html', {'form': form})
 
 
 def login_view(request):
     if request.method == 'POST':
-        form = CustomUserLoginForm(request.POST)
+        form = CustomUserLoginForm(request=request, data=request.POST)
         if form.is_valid():
             user = form.get_user()
             login(request, user, backend='django.contrib.auth.backends.ModelBackend')
             return redirect('main_shop:index')
     else:
         form = CustomUserLoginForm()
-    return render(request, 'users/login.html', {'form':form})
-
+    return render(request, 'users/login.html', {'form': form})
+    
 
 @login_required(login_url='/users/login')
 def profile_view(request):
@@ -42,7 +41,7 @@ def profile_view(request):
         form = CustomUserUpdateForm(request.POST, instance=request.user)
         if form.is_valid():
             form.save()
-            if request.header.get('HX-Request'):
+            if request.headers.get("HX-Request"):
                 return HttpResponse(headers={'HX-Redirect': reverse('users:profile')})
             return redirect('users:profile')
     else:
