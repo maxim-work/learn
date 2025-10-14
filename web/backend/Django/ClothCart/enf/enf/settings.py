@@ -12,7 +12,7 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 
 from pathlib import Path
 import os
-from dotenv import find_dotenv, load_dotenv
+from dotenv import  load_dotenv
 
 load_dotenv()
 
@@ -29,7 +29,7 @@ SECRET_KEY = os.getenv('SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv('DEBUG')
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
@@ -45,6 +45,8 @@ INSTALLED_APPS = [
     'main_shop',
     'cart',
     'users',
+    'orders',
+    'payment'
 ]
 
 MIDDLEWARE = [
@@ -148,3 +150,6 @@ SESSION_SAVE_EVERY_REQUEST = True # You can leave the program save, if there is 
 
 
 AUTH_USER_MODEL = 'users.CustomUser'  # to use custom registration
+
+STRIPE_SECRET_KEY = os.getenv('STRIPE_SECRET_KEY')
+STRIPE_WEBHOOK_SECRET = os.getenv('STRIPE_WEBHOOK_SECRET')
