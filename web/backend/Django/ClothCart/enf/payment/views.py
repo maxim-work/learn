@@ -2,7 +2,7 @@ from django.shortcuts import render
 import stripe
 import requests
 from django.conf import settings
-from django.shortcuts import redirect, render, get_object_or_404
+from django.shortcuts import redirect, get_object_or_404, render
 from django.http import HttpResponse, HttpResponseBadRequest, HttpResponseNotAllowed
 from django.template.response import TemplateResponse
 from django.views.decorators.csrf import csrf_exempt
@@ -15,33 +15,32 @@ import hashlib
 import base64
 
 
-
 stripe.api_key = settings.STRIPE_SECRET_KEY
 stripe_endpoint_secret = settings.STRIPE_WEBHOOK_SECRET
 
 
 def create_stripe_checkout_session(order, request):
-    cart = CartMixin.get_cart(request)
+    cart = CartMixin().get_cart(request)
     line_items = []
-    for item in cart.items.selected_related('product', 'product_size'):
+    for item in cart.items.select_related('product', 'product_size'):
         line_items.append({
             'price_data': {
                 'currency': 'eur',
                 'product_data': {
                     'name': f'{item.product.name} - {item.product_size.size.name}',
                 },
-                'unit_amount': int(item.product.size * 100),
+                'unit_amount': int(item.product.price * 100),
             },
             'quantity': item.quantity,
         })
-
+    
     try:
         checkout_session = stripe.checkout.Session.create(
-            excluded_payment_method_types=['card'],
+            payment_method_types=['card'],
             line_items=line_items,
             mode='payment',
-            success_url=request.build_absolute_uri('payment/stripe/success/') + '?session_id={CHECKOUT_SESSION_ID}',
-            cancel_url=request.build_absolute_uri('payment/stripe/cancel/') + f'order_id={order.id}',
+            success_url=request.build_absolute_uri('/payment/stripe/success/') + '?session_id={CHECKOUT_SESSION_ID}',
+            cancel_url=request.build_absolute_uri('/payment/stripe/cancel/') + f'order_id={order.id}',
             metadata={
                 'order_id': order.id
             }
@@ -51,8 +50,7 @@ def create_stripe_checkout_session(order, request):
         order.save()
         return checkout_session
     except Exception as e:
-        raise 
-
+        raise
 
 
 @csrf_exempt
@@ -62,14 +60,13 @@ def stripe_webhook(request):
     sig_header = request.META.get('HTTP_STRIPE_SIGNATURE')
     event = None
 
-
     try:
         event = stripe.Webhook.construct_event(
-            payload, sig_header, stripe_endpoint_secret,
+            payload, sig_header, stripe_endpoint_secret
         )
     except ValueError as e:
         return HttpResponse(status=400)
-    except stripe.error.SignatureVirificartionERRor as e:
+    except stripe.error.SignatureVerificartionError as e:
         return HttpResponse(status=400)
     
     if event['type'] == 'checkout.session.completed':
@@ -77,14 +74,13 @@ def stripe_webhook(request):
         order_id = session['metadata'].get('order_id')
         try:
             order = Order.objects.get(id=order_id)
-            order.status  = 'proccesing'
+            order.status = 'processing'
             order.stripe_payment_intent_id = session.get('payment_intent')
             order.save()
         except Order.DoesNotExist:
             return HttpResponse(status=400)
         
     return HttpResponse(status=200)
-
 
 def stripe_success(request):
     session_id = request.GET.get('session_id')
@@ -100,7 +96,7 @@ def stripe_success(request):
             context = {'order': order}
             if request.headers.get('HX-Request'):
                 return TemplateResponse(request, 'payment/stripe_success_content.html', context)
-            return render(request, 'payment/stripe_success.html')
+            return render(request, 'payment/stripe_success.html', context)
         except Exception as e:
             raise
     return redirect('main_shop:index')
@@ -110,7 +106,7 @@ def stripe_cancel(request):
     order_id = request.GET.get('order_id')
     if order_id:
         order = get_object_or_404(Order, id=order_id)
-        order.status = 'canceled'
+        order.status = 'cancelled'
         order.save()
         context = {'order': order}
         if request.headers.get('HX-Request'):
