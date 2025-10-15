@@ -90,7 +90,7 @@ class CatalogView(TemplateView):
             
             template = 'main_shop/filter_modal.html' if request.GET.get('show_filters') == True else 'main_shop/catalog.html'
             return TemplateResponse(request, template, context)
-        return TemplateResponse(request, self.template_name, context)
+        return TemplateResponse(request, self.template, context)
 
 
 class ProductDetailView(DetailView):

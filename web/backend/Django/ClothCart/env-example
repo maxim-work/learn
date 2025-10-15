@@ -1,0 +1,17 @@
+SECRET_KEY=''
+DEBUG=False #/True if dev
+
+POSTGRES_DB=''
+POSTGRES_USER=''
+POSTGRES_PASSWORD=''
+POSTGRES_PORT=5432
+POSTGRES_HOST=localhost #/db
+
+
+STRIPE_SECRET_KEY=''
+STRIPE_WEBHOOK_SECRET=''
+
+# working with Stripe
+
+# stripe login
+# stripe listen --forward-to localhost:8000/payment/stripe/webhook/

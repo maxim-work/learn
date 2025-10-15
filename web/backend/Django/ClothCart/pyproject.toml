@@ -3,19 +3,19 @@ requires = ["setuptools>=61.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "clothcart"
+name = "enf"
 version = "0.1.0"
 description = "Django интернет-магазин одежды"
 authors = [
     { name = "maxim", email = "your-email@example.com" }
 ]
 dependencies = [
-    "Django>=4.2.7",
-    "Pillow>=10.0.1",
-    "python-dotenv>=1.0.0",
-    "psycopg2-binary>=2.9.7",
-    "requests>=2.25.0",
-    "stripe>=5.0.0",
+    "Django==5.2.7",
+    "pillow==11.3.0",
+    "python-dotenv==1.1.1",
+    "psycopg2-binary==2.9.10",
+    "requests==2.32.5",
+    "stripe==13.0.1",
 ]
 
 [project.optional-dependencies]
@@ -24,14 +24,8 @@ dev = [
     "django-extensions>=3.2.0",
     "ipython>=8.0.0",
 ]
+
 prod = [
-    "gunicorn>=21.0.0",
+    "gunicorn==23.0.0",
     "whitenoise>=6.0.0",
 ]
-
-[tool.django]
-settings_module = "clothcart.settings"
-
-[tool.black]
-line-length = 88
-target-version = ['py310']
